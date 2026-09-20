@@ -6,5 +6,12 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.141.1",
+    "langchain-nvidia-ai-endpoints>=1.4.3",
     "langgraph>=1.2.11",
+    "pydantic-settings>=2.15.0",
+    "pyright>=1.1.414",
+    "python-dotenv>=1.2.3",
 ]
+
+[tool.pyright]
+pythonVersion="3.12"
