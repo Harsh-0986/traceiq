@@ -1,36 +1,150 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TraceIQ Frontend
 
-## Getting Started
+Next.js 16 frontend for the TraceIQ agentic research system. Opens directly to a research interface — no authentication, no landing page funnel.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS v4 (`@theme inline`) |
+| UI Primitives | Hand-rolled shadcn-style (cva, clsx, tailwind-merge, @radix-ui/react-slot) |
+| Icons | Lucide React |
+| Markdown | react-markdown + remark-gfm |
+| Streaming | Native `fetch` + `ReadableStream` SSE client |
+
+## Design System
+
+**Light Theme (default)**
+- Background: `#fdfcf8` (warm paper)
+- Foreground: `#151513` (ink)
+- Accent: `#0d7a70` (deep teal)
+- Semantic: loop (amber), done (green), danger (red)
+- Subtle noise texture via CSS radial-gradient
+
+**Dark Theme** (`prefers-color-scheme: dark`)
+- Background: `#0f0f0f`
+- Foreground: `#ebeae6`
+- Accent: `#2ec4b0`
+
+**Typography**
+- UI: Instrument Sans (`--font-sans`)
+- Report: Newsreader (`--font-serif`)
+- Telemetry: IBM Plex Mono (`--font-mono`)
+
+**Animations** (CSS @keyframes)
+- `fade-in` — 0.4s ease-out
+- `slide-up` — 0.5s ease-out, 8px Y offset
+- `scale-in` — 0.3s ease-out, 0.96 scale
+- `pulse-soft` — 2s ease-in-out infinite
+- Stagger delays: `.delay-1` through `.delay-5` (60ms increments)
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx       # Fonts, metadata, global styles
+│   │   ├── page.tsx         # Client entry → <TraceIQApp />
+│   │   └── globals.css      # Design tokens, animations, report typography
+│   ├── components/
+│   │   ├── ui/              # Button, Card, Badge, Textarea, Skeleton, Separator
+│   │   ├── research-input.tsx
+│   │   ├── research-pipeline.tsx
+│   │   ├── agent-activity.tsx
+│   │   ├── iterations-list.tsx
+│   │   ├── source-list.tsx / source-card.tsx
+│   │   ├── evidence-list.tsx / evidence-card.tsx
+│   │   ├── critic-panel.tsx
+│   │   ├── research-report.tsx
+│   │   ├── completion-banner.tsx
+│   │   ├── error-banner.tsx
+│   │   ├── research-workspace.tsx
+│   │   └── traceiq-app.tsx  # State machine + SSE orchestration
+│   └── lib/
+│       ├── sse.ts           # streamResearch() — SSE client
+│       ├── types.ts         # ResearchState, Source, Evidence, ActivityEntry, IterationRecord
+│       └── utils.ts         # cn(), domainOf(), nowTime()
+├── .env.example
+├── .env.local
+├── package.json
+├── tsconfig.json
+└── next.config.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key Components
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### `TraceIQApp` — Main Orchestrator
+- Manages phase: `idle` → `running` → `completed` | `failed`
+- SSE connection lifecycle (start/abort/retry)
+- Derives `ActivityEntry[]` from state transitions (`deriveActivity`)
+- Records `IterationRecord[]` at critic decision points (`recordIteration`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### `ResearchWorkspace` — Split Layout
+- **Sidebar** (desktop: fixed 320px, `overflow-y-auto` with top/bottom padding)
+  - Pipeline, Agent Activity, Iterations, Sources (all collapsible)
+- **Main** (flex-1, max-w-3xl, centered)
+  - Query header, CriticPanel, EvidenceList, ResearchReport
+- **Mobile**: Sidebar as slide-in drawer with sticky header
 
-## Learn More
+### `streamResearch()` — SSE Client (`lib/sse.ts`)
+```typescript
+streamResearch(
+  { query, maxIterations },
+  { onState, onDone, onError }
+) → { abort: () => void }
+```
+- POST to `${NEXT_PUBLIC_API_URL}/research/stream`
+- Parses `data: {...}\n\n` frames, handles `type: "done"`
+- 5-minute inactivity timeout → abort + friendly error
+- `AbortController` for clean cleanup
 
-To learn more about Next.js, take a look at the following resources:
+## Environment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend API base URL |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+```bash
+pnpm dev       # Development server (Turbopack)
+pnpm build     # Production build
+pnpm start     # Production server
+pnpm lint      # ESLint
+pnpm tsc --noEmit  # Type check
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Adding UI Primitives
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+New components follow the shadcn pattern in `components/ui/`:
+```tsx
+// button.tsx
+import { cva } from "class-variance-authority";
+const buttonVariants = cva("base-classes", { variants: { variant: {...}, size: {...} } });
+```
+
+No external component library — all primitives are source-available in the repo.
+
+## Accessibility
+
+- Semantic HTML (`<nav>`, `<article>`, `<header>`, `<ol>`)
+- `aria-live="polite"` on activity log
+- `aria-expanded` on collapsible sections
+- Focus-visible rings (2px ring, 2px offset)
+- Keyboard navigation: Enter to submit, Shift+Enter for newline
+- `role="status"` on live indicators
+
+## Performance
+
+- Static generation for `/` (prerendered)
+- Client-side only for `TraceIQApp` (`"use client"`)
+- No hydration mismatch — initial screen is static
+- Skeleton loading for report while writing
+- Staggered entrance animations (60ms per item)
+
+## Browser Support
+
+Modern browsers with `ReadableStream` + `TextDecoder` (all evergreen).
