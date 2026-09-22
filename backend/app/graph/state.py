@@ -23,6 +23,7 @@ class ResearchState(TypedDict):
     current_question: str
     sources: list[dict]
     evidence: list[dict]
+    searched_queries: list[str]
 
     # Evaluation
     critique: str

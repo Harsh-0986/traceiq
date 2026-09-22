@@ -7,6 +7,13 @@ class Settings(BaseSettings):
     model: str
     debug: bool
 
+    langsmith_tracing: bool
+    # langsmith_endpoint: str
+    langsmith_api_key: SecretStr
+    langsmith_project: str
+
+    tavily_api_key: SecretStr
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
