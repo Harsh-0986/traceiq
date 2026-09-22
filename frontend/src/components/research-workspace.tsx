@@ -47,7 +47,7 @@ export function ResearchWorkspace({
   const completedSteps = state.completedSteps.filter((s) => s !== "writing");
 
   const sidebarContent = (
-    <nav className="flex flex-col gap-5 overflow-y-auto pr-1 pb-6 pt-2 max-h-[calc(100vh-160px)]">
+    <nav className="flex flex-col gap-5 pr-1 pb-6 pt-2">
       <ResearchPipeline
         currentStep={state.currentStep}
         completedSteps={completedSteps}
@@ -102,11 +102,11 @@ export function ResearchWorkspace({
       )}
 
       <div className="flex-1 flex overflow-hidden">
-        <aside className="w-80 flex-shrink-0 border-r border-border/50 bg-card/50 p-4 lg:p-5 hidden lg:block">
-          <div className="h-[calc(100vh-140px)] overflow-y-auto pr-1 pb-6 pt-2">{sidebarContent}</div>
+        <aside className="w-80 flex-shrink-0 border-r border-border/50 bg-card/50 hidden lg:block max-h-[calc(100vh-60px)] overflow-y-auto p-4 lg:p-5">
+          {sidebarContent}
         </aside>
 
-        <main className="flex-1 flex flex-col min-w-0 p-4 lg:p-8">
+        <main className="flex-1 flex flex-col min-w-0 max-h-[calc(100vh-60px)] overflow-hidden p-4 lg:p-8">
           {phase === "completed" && (
             <div className="animate-slide-up mb-6">
               <CompletionBanner
