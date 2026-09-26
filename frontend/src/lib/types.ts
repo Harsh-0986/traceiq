@@ -1,7 +1,7 @@
 export type Source = {
   question: string;
   title: string;
-  url: string;
+  url?: string;
   content: string;
 };
 
@@ -9,7 +9,7 @@ export type Evidence = {
   question: string;
   finding: string;
   confidence?: string;
-  source_url: string;
+  source_url?: string;
 };
 
 export type ResearchState = {

@@ -23,7 +23,8 @@ const CONFIDENCE_STYLE: Record<string, { variant: "done" | "loop" | "danger"; ic
 
 export function EvidenceCard({ evidence, index }: { evidence: Evidence; index: number }) {
   const confidence = normalizeConfidence(evidence.confidence);
-  const hasSource = Boolean(evidence.source_url.trim());
+  const sourceUrl = evidence.source_url ?? "";
+  const hasSource = Boolean(sourceUrl.trim());
   const confStyle = confidence ? CONFIDENCE_STYLE[confidence] : null;
 
   return (
@@ -45,12 +46,12 @@ export function EvidenceCard({ evidence, index }: { evidence: Evidence; index: n
         )}
         {hasSource && (
           <a
-            href={evidence.source_url}
+            href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="group inline-flex items-center gap-1 font-mono text-[10px] text-muted-foreground/70 hover:text-accent transition-colors"
           >
-            {domainOf(evidence.source_url)}
+            {domainOf(sourceUrl)}
             <ExternalLink className="h-3 w-3 transition-colors group-hover:text-accent" />
           </a>
         )}

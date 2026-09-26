@@ -6,12 +6,13 @@ import type { Source } from "@/lib/types";
 import { cn, domainOf } from "@/lib/utils";
 
 export function SourceCard({ source, index }: { source: Source; index: number }) {
-  const title = source.title.trim() || domainOf(source.url) || "Untitled source";
+  const url = source.url ?? "";
+  const title = source.title.trim() || domainOf(url) || "Untitled source";
   const preview = source.content.trim();
 
   return (
     <a
-      href={source.url}
+      href={url}
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
@@ -31,7 +32,7 @@ export function SourceCard({ source, index }: { source: Source; index: number })
             {source.question}
           </span>
         )}
-        <span className="font-mono text-[10px] text-muted-foreground/70">{domainOf(source.url)}</span>
+        <span className="font-mono text-[10px] text-muted-foreground/70">{domainOf(url)}</span>
       </div>
     </a>
   );
